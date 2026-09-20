@@ -256,3 +256,42 @@ describe("board order", () => {
     ).toEqual(["very", "slightly", "fresh"]);
   });
 });
+
+describe("wrong attempts", () => {
+  it("counts only the misses, not the one that worked", () => {
+    const d = delivery({
+      confirmedAt: minutesAgo(1),
+      events: [
+        event("sent_out", minutesAgo(10)),
+        event("code_attempted", minutesAgo(4), { ok: false, attempt: 1 }),
+        event("code_attempted", minutesAgo(3), { ok: false, attempt: 2 }),
+        event("code_attempted", minutesAgo(1), { ok: true, attempt: 3 }),
+        event("code_confirmed", minutesAgo(1), { beat_promise: true }),
+      ],
+    });
+    expect(derive(d, NOW).wrongAttempts).toBe(2);
+  });
+
+  it("is zero when nobody has tried", () => {
+    expect(derive(delivery(), NOW).wrongAttempts).toBe(0);
+  });
+
+  it("keeps counting across a reissue, because the log does", () => {
+    const d = delivery({
+      events: [
+        event("sent_out", minutesAgo(30)),
+        event("link_opened", minutesAgo(29)),
+        event("code_attempted", minutesAgo(20), { ok: false, attempt: 1 }),
+        event("code_attempted", minutesAgo(19), { ok: false, attempt: 2 }),
+        event("code_attempted", minutesAgo(18), {
+          ok: false,
+          attempt: 3,
+          locked: true,
+        }),
+        event("code_reissued", minutesAgo(15), { reissue: 1 }),
+        event("code_attempted", minutesAgo(10), { ok: false, attempt: 1 }),
+      ],
+    });
+    expect(derive(d, NOW).wrongAttempts).toBe(4);
+  });
+});

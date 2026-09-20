@@ -10,6 +10,7 @@ import { loadDelivery } from "@/server/deliveries";
 import { IconCheck, IconWarning } from "@/ui/icons";
 import { Card, Pill } from "@/ui/primitives";
 import { ProofActions } from "./ProofActions";
+import { ReissueCode } from "./ReissueCode";
 
 export const metadata = { title: "Delivery · Taslaafa" };
 export const dynamic = "force-dynamic";
@@ -106,7 +107,11 @@ export default async function ProofPage({
                 <p
                   className={`text-sm ${d.needsLook ? "text-bad-text/85" : "text-ink-2"}`}
                 >
-                  Not confirmed yet. No code has been entered.
+                  {d.wrongAttempts === 0
+                    ? "Not confirmed yet. No code has been entered."
+                    : `Not confirmed yet. ${d.wrongAttempts} wrong ${
+                        d.wrongAttempts === 1 ? "code" : "codes"
+                      } entered at the door.`}
                 </p>
               </div>
             </div>
@@ -147,6 +152,19 @@ export default async function ProofPage({
               </p>
             </Card>
           </div>
+        ) : null}
+
+        {d.locked && !confirmed && user.role === "owner" ? (
+          <ReissueCode deliveryId={delivery.id} />
+        ) : null}
+
+        {d.locked && !confirmed && user.role !== "owner" ? (
+          <Card className="border-bad/25 bg-bad-tint p-5">
+            <p className="font-extrabold text-bad-text">Code locked</p>
+            <p className="mt-1 text-sm text-bad-text/85">
+              Three wrong tries. Only the owner can issue a new code.
+            </p>
+          </Card>
         ) : null}
 
         <Card className="p-5">

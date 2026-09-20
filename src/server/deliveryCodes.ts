@@ -27,3 +27,28 @@ export async function storeNewCode(
 
   return { error: error?.message ?? null };
 }
+
+/**
+ * Replaces the code on a locked delivery. Owner only, checked by the route.
+ *
+ * The public token does not change, so the customer's existing link simply
+ * starts showing the new digits -- nothing has to be re-shared into the
+ * thread. The old code's three failures stay in the log; reissue_code adds a
+ * row rather than resetting anything.
+ */
+export async function reissueCode(
+  deliveryId: string,
+  actorId: string,
+  codeHash: string,
+  codeCt: string,
+): Promise<{ result: string; error: string | null }> {
+  const { data, error } = await serviceClient().rpc('reissue_code', {
+    p_delivery_id: deliveryId,
+    p_actor_id: actorId,
+    p_code_hash: codeHash,
+    p_code_ct: codeCt,
+  });
+
+  if (error) return { result: 'error', error: error.message };
+  return { result: (data as { result: string }).result, error: null };
+}

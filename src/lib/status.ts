@@ -59,6 +59,8 @@ export type Derived = {
   status: Status;
   /** True once three wrong codes have been entered. */
   locked: boolean;
+  /** Wrong codes entered, across reissues. */
+  wrongAttempts: number;
   linkOpenedAt: string | null;
   /** Empty when nothing is wrong. Drives the alert dot and the Problems filter. */
   concerns: Concern[];
@@ -85,6 +87,10 @@ export function derive(delivery: Delivery, now: number = Date.now()): Derived {
   const locked = events.some(
     (e) => e.type === "code_attempted" && e.payload.locked === true,
   );
+
+  const wrongAttempts = events.filter(
+    (e) => e.type === "code_attempted" && e.payload.ok !== true,
+  ).length;
 
   const confirmEvent = events.find((e) => e.type === "code_confirmed");
 
@@ -125,6 +131,7 @@ export function derive(delivery: Delivery, now: number = Date.now()): Derived {
   return {
     status,
     locked,
+    wrongAttempts,
     linkOpenedAt: linkOpened?.createdAt ?? null,
     concerns,
     needsLook: concerns.length > 0,
