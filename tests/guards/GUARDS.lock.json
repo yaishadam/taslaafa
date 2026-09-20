@@ -3,5 +3,5 @@
   "code-unreachable.test.ts": "57e0880678eec378f39833abad3ab29a11019f363b75691888381a7e5884ee11",
   "code-visibility.test.ts": "acd01bb0389cde2fb27b917cabb82ba4cf321ad62169da92b5e79534d6e99380",
   "guards-intact.test.ts": "9f7d3fc115afc7a76130523fc427a68884cbd89af4a85974f646b070a90464a1",
-  "supabase-clients.ts": "615e40f69d04f252ffede3f17460186589331c771a65f5b601a31677520e9148"
+  "supabase-clients.ts": "7745ac7ac21112ff01a8a441679b85930a28bd02e8c295d360003e8f2b9876c0"
 }

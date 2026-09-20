@@ -1,7 +1,14 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-/** The dev password every seeded account shares. See scripts/seed.mts. */
-export const SEED_PASSWORD = "taslaafa-dev-2026";
+/**
+ * The password every seeded account shares, read from the environment.
+ *
+ * Not a constant in here. This repository is public, and once the app is
+ * deployed its Supabase URL and public key are in the browser bundle by
+ * necessity -- so a password committed alongside them is a working login
+ * for anyone who reads the source.
+ */
+export const SEED_PASSWORD = process.env.SEED_PASSWORD ?? "";
 
 export const SEED_USERS = {
   owner: "owner@taslaafa.mv",
@@ -56,6 +63,12 @@ export function signedInAs(role: SeedRole): Promise<SupabaseClient> {
 
   const pending = (async () => {
     const client = anonClient();
+    if (!SEED_PASSWORD) {
+      throw new Error(
+        "SEED_PASSWORD is not set. The guards sign in as real seeded users; " +
+          "put the value from .env into the environment.",
+      );
+    }
     const { error } = await client.auth.signInWithPassword({
       email: SEED_USERS[role],
       password: SEED_PASSWORD,

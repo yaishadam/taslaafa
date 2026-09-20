@@ -15,7 +15,17 @@ import { serviceClient } from "../src/server/supabase";
 
 const db = serviceClient();
 
-const DEV_PASSWORD = "taslaafa-dev-2026";
+// Never hard-coded. The repository is public; a password in it is a
+// password anyone can use against the deployed app, because the Supabase
+// URL and public key are necessarily in the browser bundle.
+const DEV_PASSWORD = process.env.SEED_PASSWORD;
+if (!DEV_PASSWORD) {
+  console.error(
+    "\n  SEED_PASSWORD is not set. Put one in .env -- it is the password " +
+      "every seeded account shares.\n",
+  );
+  process.exit(1);
+}
 
 const MINUTE = 60_000;
 const now = Date.now();
