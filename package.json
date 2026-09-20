@@ -10,7 +10,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:guards": "vitest run tests/guards",
-    "seed": "tsx --env-file=.env scripts/seed.ts"
+    "seed": "tsx --conditions=react-server --env-file=.env scripts/seed.mts",
+    "guards:lock": "tsx scripts/update-guard-lock.mts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
