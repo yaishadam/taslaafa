@@ -33,3 +33,6 @@ Thumbs.db
 # vercel
 .vercel
 dev.log
+
+# Local paste-helper for Vercel. Contains real keys.
+vercel-env.txt
