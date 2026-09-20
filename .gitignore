@@ -22,6 +22,8 @@ supabase/.temp/
 coverage/
 *.tsbuildinfo
 
+*.pem
+
 # editors, os
 .vscode/
 .idea/

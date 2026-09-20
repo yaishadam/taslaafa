@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+/* Taslaafa design system.
+   Tailwind v4 is CSS-first: every token below becomes a utility.
+   --color-ground -> bg-ground, --radius-card -> rounded-card, and so on.
+
+   Spacing is not redefined. Tailwind's scale is already 0.25rem-based, so
+   p-2 p-3 p-4 p-5 p-6 p-8 are exactly the 8/12/16/20/24/32 grid. */
+
+@theme {
+  /* --- ground and surfaces ------------------------------------------- */
+  --color-ground:    #F6F4F1;  /* the page itself */
+  --color-surface:   #FFFFFF;  /* cards */
+  --color-muted:     #FAF8F6;  /* inset rows, disabled fields */
+  --color-hairline:  #E8E3DD;  /* 1px borders */
+
+  /* --- text ----------------------------------------------------------- */
+  --color-ink:       #1A1613;
+  --color-ink-2:     #6E6660;
+  --color-ink-3:     #9B938C;  /* 12-13px labels only */
+
+  /* --- brand ---------------------------------------------------------- */
+  --color-brand:      #F05703;
+  --color-brand-tint: #FDEEE4;
+  --color-brand-text: #B84503;  /* brand as text on a light ground */
+
+  /* --- confirmed ------------------------------------------------------ */
+  --color-good:       #14794A;
+  --color-good-tint:  #E6F3EC;
+  --color-good-text:  #0F6B41;
+
+  /* --- alert ---------------------------------------------------------- */
+  --color-bad:        #C23E22;
+  --color-bad-tint:   #FBEAE5;
+  --color-bad-text:   #A5321A;
+
+  /* --- radii ---------------------------------------------------------- */
+  --radius-chip:   12px;
+  --radius-field:  14px;  /* inputs and buttons */
+  --radius-card:   18px;
+  --radius-sheet:  22px;
+  /* pills are rounded-full */
+
+  /* --- elevation ------------------------------------------------------ */
+  --shadow-card: 0 1px 2px rgba(26, 22, 19, 0.05),
+                 0 8px 24px -18px rgba(26, 22, 19, 0.3);
+
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system,
+               "Segoe UI", sans-serif;
+}
+
+@layer base {
+  html {
+    /* No dark mode. Pinning the scheme keeps native controls light even when
+       the device is set to dark. */
+    color-scheme: light;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-weight: 800;
+    letter-spacing: -0.04em;
+  }
+
+  /* Never an invisible focus ring, and never one that only shows for mice. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+
+  /* Numbers that change in place -- counters, timers, code boxes -- should
+     not make the layout twitch. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
