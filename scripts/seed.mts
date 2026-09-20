@@ -81,7 +81,7 @@ for (const person of PEOPLE) {
   });
   die(`creating the login for ${person.email}`, error);
 
-  const id = created!.user.id;
+  const id = created!.user!.id;
   userIds[person.email] = id;
 
   const { error: rowErr } = await db.from("app_user").insert({

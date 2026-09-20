@@ -1,6 +1,6 @@
 {
   "append-only.test.ts": "8c796899cc730e83192c609998d8e89b9a5e08943815ca7cf65276e2a0841b5b",
-  "code-visibility.test.ts": "c9e62c8d6fa9f533b2da985911976dc577cea4e8aa0e6bc954ef02a24240f5c8",
+  "code-visibility.test.ts": "40ba230c152b0ed43f0877a47fddb74a5101372594a808c2ad451155c3476e6a",
   "guards-intact.test.ts": "9f7d3fc115afc7a76130523fc427a68884cbd89af4a85974f646b070a90464a1",
   "supabase-clients.ts": "615e40f69d04f252ffede3f17460186589331c771a65f5b601a31677520e9148"
 }

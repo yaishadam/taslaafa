@@ -7,7 +7,7 @@ import {
   minutesBetween,
   minutesLate,
   shopDayStart,
-} from "@/server/time";
+} from "@/lib/time";
 
 describe("rendering UTC in Malé time", () => {
   it("shifts by five hours", () => {

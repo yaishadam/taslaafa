@@ -114,8 +114,20 @@ describe("nothing readable contains a plaintext code", () => {
   it("no value a signed-in client can select equals a real code", async () => {
     const db = serviceClient();
 
-    // Put a delivery in the database whose plaintext we know, then look for
-    // it everywhere the shop is allowed to read.
+    // One fixture row, reused forever, with a fresh code rotated into it on
+    // every run.
+    //
+    // It has to be reused rather than recreated because a delivery cannot be
+    // deleted through any application path -- that is rule 1 working. A test
+    // that inserted one per run would pile undeletable junk into the board
+    // until someone ran dev_reset.sql.
+    //
+    // Dated 2020 and already confirmed so it stays off Today and off the
+    // open list. It is still a real row and will appear in the proof log,
+    // which is honest: it is a delivery that happened to a test.
+    const FIXTURE_REF = "GUARD-FIXTURE";
+    const FIXTURE_TOKEN = "guardfixture0000000000";
+
     const { data: shop } = await db.from("shop").select("id").limit(1).single();
     const { data: customer } = await db
       .from("customer")
@@ -131,36 +143,59 @@ describe("nothing readable contains a plaintext code", () => {
 
     const { code, codeHash, codeCt } = mintCode();
 
-    const { data: delivery, error: delErr } = await db
+    const { data: found } = await db
       .from("delivery")
-      .insert({
+      .select("id")
+      .eq("public_token", FIXTURE_TOKEN)
+      .maybeSingle();
+
+    let deliveryId = found?.id as string | undefined;
+
+    if (!deliveryId) {
+      const long_ago = "2020-01-01T00:00:00Z";
+      const { data: created, error: delErr } = await db
+        .from("delivery")
+        .insert({
+          shop_id: shop!.id,
+          customer_id: customer!.id,
+          promise_minutes: 30,
+          driver_id: driver!.id,
+          order_ref: FIXTURE_REF,
+          public_token: FIXTURE_TOKEN,
+          created_at: long_ago,
+          sent_at: long_ago,
+          due_at: "2020-01-01T00:30:00Z",
+          confirmed_at: "2020-01-01T00:10:00Z",
+          confirmed_by: driver!.id,
+        })
+        .select()
+        .single();
+      expect(delErr).toBeNull();
+      deliveryId = created!.id as string;
+
+      await db.from("delivery_code").insert({
+        delivery_id: deliveryId,
+        code_hash: codeHash,
+        code_ct: codeCt,
+      });
+
+      await db.from("delivery_event").insert({
+        delivery_id: deliveryId,
         shop_id: shop!.id,
-        customer_id: customer!.id,
-        promise_minutes: 30,
-        driver_id: driver!.id,
-        order_ref: "GUARD-TEST",
-        public_token: `guard${Date.now()}`.padEnd(22, "x").slice(0, 22),
-        sent_at: new Date().toISOString(),
-        due_at: new Date(Date.now() + 30 * 60_000).toISOString(),
-      })
-      .select()
-      .single();
-    expect(delErr).toBeNull();
-
-    await db.from("delivery_code").insert({
-      delivery_id: delivery!.id,
-      code_hash: codeHash,
-      code_ct: codeCt,
-    });
-
-    await db.from("delivery_event").insert({
-      delivery_id: delivery!.id,
-      shop_id: shop!.id,
-      type: "created",
-      actor_kind: "staff",
-      actor_user_id: driver!.id,
-      payload: { order_ref: "GUARD-TEST" },
-    });
+        type: "created",
+        actor_kind: "staff",
+        actor_user_id: driver!.id,
+        payload: { order_ref: FIXTURE_REF },
+      });
+    } else {
+      // delivery_code is not append-only -- only the log is -- so the code
+      // can be rotated in place without leaving a trail of rows.
+      const { error } = await db
+        .from("delivery_code")
+        .update({ code_hash: codeHash, code_ct: codeCt })
+        .eq("delivery_id", deliveryId);
+      expect(error).toBeNull();
+    }
 
     const READABLE = [
       "shop",
