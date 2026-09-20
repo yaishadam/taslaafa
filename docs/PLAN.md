@@ -1,6 +1,9 @@
 # Taslaafa — build plan
 
-Status: **awaiting review.** Nothing below the schema has been built.
+Status: **built.** Every screen in the brief exists and has been walked
+through in a browser against the real database. Sections 1 to 6 describe
+what was planned; section 7 what was decided at review; section 8 what is
+still open.
 
 ## 1. Shape of the thing
 
@@ -127,16 +130,22 @@ No websockets.
 
 ## 5. Build order
 
-Each bullet is a commit or two.
+All done, in this order, one or two commits each.
 
-1. Scaffold, Tailwind tokens, `Logo.tsx`, design primitives.
-2. Migrations + seed + the two guard tests. **Red before anything else is built.**
-3. Auth: sign-in, session, role routing. (No signup — users made by hand.)
-4. **Spine:** new delivery -> mint code -> share sheet -> `/d/[token]` ->
-   keypad -> `attempt_code` -> confirmed.
-5. Proof screen.
-6. Today view + late flags + the sweep.
-7. Owner dashboard.
+1. ~~Scaffold, Tailwind tokens, `Logo.tsx`, design primitives.~~
+2. ~~Migrations + seed + the two guard tests.~~
+3. ~~Auth: sign-in, session, role routing.~~
+4. ~~**Spine:** new delivery -> mint code -> share sheet -> `/d/[token]` ->
+   keypad -> `attempt_code` -> confirmed.~~
+5. ~~Proof screen.~~
+6. ~~Today view + late flags + the sweep.~~
+7. ~~Owner dashboard.~~
+
+The guards grew a third file along the way. `code-unreachable.test.ts`
+walks the import graph and proves no route, page or layout can reach the
+module that decrypts a code, at any depth. That is the "no authenticated
+API route can return it" requirement, answered more strongly than a
+response scan would and without needing a live server.
 
 ## 6. Assumptions I am making unless told otherwise
 

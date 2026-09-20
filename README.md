@@ -11,7 +11,18 @@ Taslaafa does not deliver anything and is not a marketplace.
 
 ## Status
 
-Schema and plan only. See [docs/PLAN.md](docs/PLAN.md).
+All seven screens are built and working against a real database. See
+[docs/PLAN.md](docs/PLAN.md) for what was decided and what is still open.
+
+| Surface | Screens |
+| --- | --- |
+| Shop, phone | Today, New delivery, Delivery proof, Proof log |
+| Driver, phone | My drops, Enter the code |
+| Customer, public | `/d/[token]` |
+| Owner, desktop | Dashboard, Proof log, Riders, Settings |
+
+Not built, by instruction: signup and onboarding, editable settings,
+payments, maps or distance, offline support, dark mode, customer accounts.
 
 ## Two rules
 
