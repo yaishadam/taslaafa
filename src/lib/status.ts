@@ -152,6 +152,8 @@ export type Counters = {
   onTimePercent: number | null;
   runningLate: number;
   needsLook: number;
+  /** Mean door-to-door time of everything confirmed. Null before the first. */
+  averageSecondsToDoor: number | null;
 };
 
 export function countBoard(
@@ -163,9 +165,16 @@ export function countBoard(
   const confirmed = derived.filter((d) => d.status === "confirmed");
   const onTime = confirmed.filter((d) => d.beatPromise === true);
 
+  const times = confirmed
+    .map((d) => d.secondsToDoor)
+    .filter((s): s is number => s !== null);
+
   return {
     outNow: derived.filter((d) => d.status === "out" || d.status === "late")
       .length,
+    averageSecondsToDoor: times.length
+      ? Math.round(times.reduce((a, b) => a + b, 0) / times.length)
+      : null,
     // No percentage until something has actually been delivered. "0%" before
     // the first drop of the day is a lie that looks like a metric.
     onTimePercent: confirmed.length
