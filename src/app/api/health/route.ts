@@ -28,11 +28,22 @@ export async function GET() {
 
   const missing = REQUIRED.filter((n) => !present[n]);
 
+  // Names only, never values. When a variable is set but the app cannot
+  // see it, the cause is almost always a name that does not match -- a
+  // typo, a stray space, a different project. Listing what actually arrived
+  // is the only way to tell that apart from "not saved yet" from outside.
+  const namesThatArrived = Object.keys(process.env)
+    .filter((n) => /SUPA|TASLA|CRON|ANON|CODE_KEY/i.test(n))
+    .sort();
+
   return NextResponse.json(
     {
       ok: missing.length === 0,
       missing,
       present,
+      names_that_arrived: namesThatArrived,
+      deployed_commit: (process.env.VERCEL_GIT_COMMIT_SHA ?? "").slice(0, 7),
+      vercel_env: process.env.VERCEL_ENV ?? "none",
       region: process.env.VERCEL_REGION ?? "local",
       origin_resolves_to:
         process.env.NEXT_PUBLIC_APP_ORIGIN ??
