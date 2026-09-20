@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { appOrigin } from "@/lib/origin";
 import { deliveryUrl, proofMessage } from "@/lib/share";
 import { CONCERN_LABELS, derive } from "@/lib/status";
 import { buildTimeline } from "@/lib/timeline";
@@ -39,8 +40,7 @@ export default async function ProofPage({
     ? `${user.shop.name}, ${user.shop.branch}`
     : user.shop.name;
 
-  const origin = process.env.NEXT_PUBLIC_APP_ORIGIN ?? "";
-  const url = deliveryUrl(delivery.publicToken, origin);
+  const url = deliveryUrl(delivery.publicToken, appOrigin());
 
   const message = proofMessage({
     shopName,

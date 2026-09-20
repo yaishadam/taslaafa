@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { appOrigin } from "@/lib/origin";
 import { deliveryUrl, shareMessage } from "@/lib/share";
 import { currentUser } from "@/server/auth";
 import { mintCode, mintToken } from "@/server/codes";
@@ -174,9 +175,7 @@ export async function POST(request: Request) {
     },
   ]);
 
-  const origin =
-    process.env.NEXT_PUBLIC_APP_ORIGIN ?? new URL(request.url).origin;
-  const url = deliveryUrl(token, origin);
+  const url = deliveryUrl(token, appOrigin());
 
   return NextResponse.json({
     id: delivery.id,
