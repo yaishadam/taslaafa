@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# next
+.next/
+out/
+build/
+next-env.d.ts
+
+# env — TASLAAFA_CODE_KEY and the Supabase service key live here. Never commit.
+.env
+.env.*
+!.env.example
+
+# supabase local
+supabase/.branches/
+supabase/.temp/
+
+# test / build output
+coverage/
+*.tsbuildinfo
+
+# editors, os
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# vercel
+.vercel
