@@ -13,11 +13,12 @@ export const dynamic = "force-dynamic";
 export default async function TodayPage() {
   const user = await requireRole("owner", "staff");
 
-  // Flag anything that went past its promise since the last look. Idempotent,
-  // so calling it on every load is free.
-  await sweepLate(user.shop.id);
-
-  const [today, open] = await Promise.all([
+  // The sweep runs alongside the reads, not before them. Lateness on screen
+  // is computed from due_at, so the board does not need the marked_late
+  // event to exist yet -- the event is the durable record, not the source of
+  // the red pill. Waiting for it just added a round trip to every load.
+  const [, today, open] = await Promise.all([
+    sweepLate(user.shop.id),
     loadToday(user.shop.timezone),
     loadOpen(),
   ]);

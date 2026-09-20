@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 /**
  * Reads go through the signed-in user's own session, so row-level security is
@@ -63,21 +64,34 @@ export async function sessionClient(): Promise<SupabaseClient> {
   );
 }
 
-/** The signed-in person and their shop, or null. */
-export async function currentUser(): Promise<AppUser | null> {
+/**
+ * The signed-in person and their shop, or null.
+ *
+ * Wrapped in React's cache() so a layout and the page inside it share one
+ * answer. Without it every screen paid for the same two round trips twice,
+ * and from Male to Singapore that is most of a second of staring at
+ * nothing.
+ *
+ * getClaims(), not getUser(): getUser() is a network call to the auth server
+ * on every single request. getClaims() verifies the token's signature
+ * locally against the project's public keys, which it fetches once and
+ * caches. It is not the getSession() shortcut -- that one trusts the cookie
+ * without checking anything. This checks the signature, it just does not
+ * need a round trip to do it.
+ */
+export const currentUser = cache(async (): Promise<AppUser | null> => {
   const supabase = await sessionClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { data: claims } = await supabase.auth.getClaims();
+  const userId = claims?.claims?.sub;
+  if (!userId) return null;
 
   const { data } = await supabase
     .from("app_user")
     .select(
       "id, role, full_name, is_active, shop:shop_id (id, name, branch, timezone, default_promise_minutes)",
     )
-    .eq("id", user.id)
+    .eq("id", userId)
     .single();
 
   if (!data || !data.is_active) return null;
@@ -103,7 +117,7 @@ export async function currentUser(): Promise<AppUser | null> {
       defaultPromiseMinutes: shop.default_promise_minutes,
     },
   };
-}
+});
 
 export async function requireUser(): Promise<AppUser> {
   const user = await currentUser();

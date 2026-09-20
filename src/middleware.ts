@@ -43,12 +43,23 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  // Must be getUser, not getSession: getSession trusts the cookie, getUser
-  // verifies it with the auth server. The difference matters when the thing
-  // behind the cookie is someone's delivery history.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims() verifies the token's signature locally against the project's
+  // public keys, so a valid session costs no network at all. That matters
+  // here more than anywhere: this runs on every request, and the round trip
+  // to Singapore was showing up as a fixed ~200ms tax on every page.
+  //
+  // Not getSession(), which trusts the cookie without checking it. When the
+  // token is missing or past its hour, fall through to getUser(), which does
+  // talk to the auth server and refreshes it.
+  const { data: claims } = await supabase.auth.getClaims();
+  let user: { id: string } | null = claims?.claims?.sub
+    ? { id: claims.claims.sub }
+    : null;
+
+  if (!user) {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  }
 
   const { pathname } = request.nextUrl;
 

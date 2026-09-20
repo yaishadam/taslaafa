@@ -9,13 +9,14 @@ export const dynamic = "force-dynamic";
 
 export default async function DropsPage() {
   const user = await requireRole("driver");
-  await sweepLate(user.shop.id);
-
   // No driver_id filter here on purpose. The RLS policy on delivery narrows
   // this to his own drops, so a missing filter leaks nothing -- and if it
   // ever did, that would be a policy bug worth finding rather than papering
   // over in a query.
-  const deliveries = await loadToday(user.shop.timezone);
+  const [, deliveries] = await Promise.all([
+    sweepLate(user.shop.id),
+    loadToday(user.shop.timezone),
+  ]);
   const now = Date.now();
 
   return (

@@ -11,9 +11,8 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const user = await requireRole("owner");
-  await sweepLate(user.shop.id);
-
-  const [today, open] = await Promise.all([
+  const [, today, open] = await Promise.all([
+    sweepLate(user.shop.id),
     loadToday(user.shop.timezone),
     loadOpen(),
   ]);
