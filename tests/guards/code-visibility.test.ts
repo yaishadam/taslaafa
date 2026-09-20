@@ -29,14 +29,20 @@ import { anonClient, serviceClient, signedInAs } from "./supabase-clients";
 
 const SRC = path.resolve(import.meta.dirname, "..", "..", "src");
 
-/** The only files permitted to turn a stored code back into digits. */
-const REVEAL_ALLOWLIST = ["app/d/[token]/page.tsx", "server/codes.ts"];
-
-/** The only files permitted to touch the delivery_code table at all. */
-const CODE_TABLE_ALLOWLIST = [
-  "app/d/[token]/page.tsx",
-  "server/deliveryCodes.ts",
-];
+/**
+ * The chain that is allowed to show a code, and nothing else:
+ *
+ *   app/d/[token]/page.tsx  ->  server/customerView.ts  ->  server/codes.ts
+ *
+ * server/deliveryCodes.ts is the write half and may be imported freely: it
+ * stores a ciphertext and cannot read one back.
+ *
+ * Each link is checked separately below, so widening any one of them is a
+ * visible edit to this file rather than a quiet import somewhere else.
+ */
+const REVEAL_ALLOWLIST = ["server/customerView.ts", "server/codes.ts"];
+const CODE_TABLE_ALLOWLIST = ["server/customerView.ts", "server/deliveryCodes.ts"];
+const CUSTOMER_VIEW_IMPORTERS = ["app/d/[token]/page.tsx"];
 
 function walk(dir: string): string[] {
   if (!existsSync(dir)) return [];
@@ -241,7 +247,27 @@ describe("the source itself", () => {
     ).toEqual([]);
   });
 
-  it("only the public customer page touches the delivery_code table", () => {
+  it("only the public customer page can reach the module that reveals codes", () => {
+    const importers = sourceFiles()
+      .filter(
+        ({ rel, text }) =>
+          rel !== "server/customerView.ts" &&
+          /from\s+["']@\/server\/customerView["']/.test(text),
+      )
+      .map(({ rel }) => rel);
+
+    const unexpected = importers.filter(
+      (f) => !CUSTOMER_VIEW_IMPORTERS.includes(f),
+    );
+
+    expect(
+      unexpected,
+      `Something outside the customer page imported server/customerView. ` +
+        `That module returns a plaintext code.`,
+    ).toEqual([]);
+  });
+
+  it("only the code module touches the delivery_code table", () => {
     const touchers = sourceFiles()
       .filter(({ text }) => /["'`]delivery_code["'`]|\bcode_ct\b/.test(text))
       .map(({ rel }) => rel);
