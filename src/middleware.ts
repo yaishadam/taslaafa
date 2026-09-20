@@ -15,13 +15,38 @@ import { NextResponse, type NextRequest } from "next/server";
  */
 
 /** Paths a signed-out person is allowed to reach. */
-const PUBLIC_PREFIXES = ["/signin", "/d/", "/api/public/", "/api/cron/"];
+const PUBLIC_PREFIXES = [
+  "/signin",
+  "/d/",
+  "/api/public/",
+  "/api/cron/",
+  "/api/health",
+];
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
 }
 
 export async function middleware(request: NextRequest) {
+  try {
+    return await handle(request);
+  } catch (error) {
+    // A throw in here takes down every route at once, including /signin, and
+    // Vercel reports it only as MIDDLEWARE_INVOCATION_FAILED with no clue
+    // why. A missing environment variable does exactly that: the Supabase
+    // client refuses to construct.
+    //
+    // Failing open is safe HERE and nowhere else. Every route group calls
+    // requireRole in its own layout and every API route checks the session
+    // itself, so this check is defence in depth rather than the only gate.
+    // Letting the request through means a misconfigured deployment shows a
+    // sign-in page and a real error instead of a blank 500 on every URL.
+    console.error("middleware failed, falling through:", error);
+    return NextResponse.next({ request });
+  }
+}
+
+async function handle(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
